@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b2545">
+<title>Boîte à avions</title>
+<style>
+:root{
+  --bg:#0b2545; --bg2:#13315c; --card:#ffffff; --ink:#132437; --muted:#5b7089;
+  --accent:#1d6fd8; --accent2:#0fa36b; --gold:#e8a33d; --danger:#c94f4f;
+  --radius:18px;
+  --sidew:clamp(54px,13vw,92px);
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:linear-gradient(160deg,var(--bg) 0%,var(--bg2) 100%);
+  color:#fff; min-height:100dvh;
+  padding-top:var(--sat); padding-bottom:var(--sab);
+  -webkit-text-size-adjust:100%;
+}
+.screen{max-width:560px;margin:0 auto;padding:16px;display:none;}
+#home.active{display:flex;flex-direction:column;height:100dvh;overflow:hidden;padding:8px 14px calc(4px + var(--sab));width:100%;}
+.screen.active{display:block;}
+h1{font-size:22px;margin:0;font-weight:800;letter-spacing:.3px;}
+.titlerow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 2px;flex:none;}
+.modes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 8px;flex:none;}
+.mode-btn{
+  border:0;border-radius:12px;padding:7px 2px;text-align:center;cursor:pointer;
+  background:var(--card);color:var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.22);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:52px;
+}
+.mode-btn .ico{font-size:15px;}
+.mode-btn b{display:block;font-size:10.5px;line-height:1.15;}
+.mode-btn.selected{outline:3px solid var(--gold);}
+.panel{background:rgba(255,255,255,.08);border-radius:var(--radius);padding:10px;margin-bottom:8px;}
+.panel h3{margin:0 2px 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#bcd0e8;font-weight:700;}
+#catpanel{display:flex;flex-direction:column;flex:1;min-height:0;}
+#expanel{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.chip{
+  border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;
+  border-radius:999px;padding:9px 14px;font-size:14px;cursor:pointer;
+}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#132437;font-weight:700;}
+.start{
+  border:0;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;
+  background:var(--accent2);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.3);flex:none;
+}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.topbar .back{background:rgba(255,255,255,.15);border:0;color:#fff;border-radius:999px;padding:9px 15px;font-size:14px;cursor:pointer;}
+.counter{font-size:14px;color:#bcd0e8;font-variant-numeric:tabular-nums;}
+.card{
+  background:var(--card);color:var(--ink);border-radius:22px;padding:20px 16px 16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);min-height:52dvh;
+  display:flex;flex-direction:column;
+}
+.word{font-size:clamp(26px,7.5vw,38px);font-weight:800;text-align:center;margin:2px 0 4px;line-height:1.15;}
+.flag{font-size:34px;text-align:center;margin-bottom:6px;line-height:1;}
+.meanings{display:grid;gap:12px;flex:1;align-content:start;}
+.fact{
+  color:#fff;background:var(--accent);padding:11px 14px;border-radius:14px;text-align:center;
+  box-shadow:0 3px 10px rgba(29,111,216,.3);cursor:default;
+}
+.fact .lab{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;opacity:.85;font-weight:700;display:block;margin-bottom:4px;}
+.fact .val{font-size:19px;font-weight:800;line-height:1.25;}
+.fact.hidden{
+  background:repeating-linear-gradient(45deg,#13315c,#13315c 12px,#1b3f74 12px,#1b3f74 24px);
+  cursor:pointer;
+}
+.fact.hidden .val{color:#bcd0e8;font-weight:700;}
+.note{font-size:12.5px;line-height:1.45;color:var(--muted);border-top:1px solid #e3e9f2;padding-top:8px;margin-top:auto;}
+.controls{display:flex;gap:10px;margin-top:14px;}
+.ctrl{flex:1;border:0;border-radius:16px;padding:16px 8px;font-size:16px;font-weight:700;cursor:pointer;color:#fff;}
+.prev{background:rgba(255,255,255,.16);}
+.next{background:var(--accent);}
+.reveal{background:var(--gold);color:#132437;flex:1.4;}
+.reveal[disabled]{opacity:.35;}
+.ctrl:active{transform:scale(.97);}
+.foot{text-align:center;color:#8aa0b8;font-size:9.5px;margin-top:4px;padding-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none;}
+.selcount{font-size:12px;color:#e8a33d;margin:4px 4px 0;flex:none;}
+.catgrid{display:grid;grid-template-columns:1fr;gap:6px;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px;align-content:start;}
+.catitem{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;font-size:14.5px;cursor:pointer;}
+.catitem input{width:19px;height:19px;accent-color:var(--gold);}
+.catitem .cnt{margin-left:auto;color:#bcd0e8;font-size:12px;font-variant-numeric:tabular-nums;}
+.smallrow{display:flex;gap:6px;margin-bottom:10px;flex-wrap:nowrap;align-items:center;}
+.randpick{display:flex;gap:6px;align-items:center;margin-left:auto;background:rgba(232,163,61,.18);border:1px solid rgba(232,163,61,.35);border-radius:999px;padding:4px 5px;}
+.randpick input{width:44px;font-size:14px;text-align:center;padding:5px 2px;border-radius:999px;border:0;background:var(--card);color:var(--ink);}
+.smallbtn{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:7px 9px;font-size:11.5px;cursor:pointer;white-space:nowrap;}
+.smallbtn.gold{background:var(--gold);color:#132437;font-weight:700;}
+.exsearch{width:100%;font-size:18px;padding:14px 16px;border-radius:14px;border:0;background:var(--card);color:var(--ink);margin-bottom:10px;-webkit-appearance:none;appearance:none;}
+.exsug{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.exsug button{border:0;border-radius:999px;padding:9px 14px;font-size:15px;font-weight:600;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.45);}
+.exsug .exnone{color:#bcd0e8;font-size:14px;}
+.excard{min-height:0;}
+.diffseg{display:inline-flex;background:#e8edf4;border-radius:999px;padding:3px;gap:3px;}
+.diffseg button{border:0;border-radius:999px;padding:6px 11px;font-size:12.5px;cursor:pointer;background:transparent;color:#5b7089;font-weight:700;}
+.diffseg button.on[data-s="ND"]{background:#c6d0dd;color:#132437;}
+.diffseg button.on[data-s="acquis"]{background:var(--accent2);color:#fff;}
+.diffseg button.on[data-s="revoir"]{background:var(--gold);color:#132437;}
+.diffrow{text-align:center;margin:0 0 10px;}
+.qopts{display:grid;gap:9px;margin-top:6px;}
+.qopt{
+  border:0;border-radius:14px;padding:14px 12px;font-size:16px;font-weight:700;cursor:pointer;
+  background:#eef2f8;color:var(--ink);text-align:left;line-height:1.3;
+}
+.qopt.good{background:var(--accent2);color:#fff;}
+.qopt.bad{background:var(--danger);color:#fff;}
+.qopt[disabled]{cursor:default;}
+.qask{font-size:15px;color:var(--muted);text-align:center;margin:0 0 10px;font-weight:700;}
+.score{font-size:14px;color:#bcd0e8;font-variant-numeric:tabular-nums;}
+
+/* ---------- boutons latéraux de classement ---------- */
+.sidebtn{
+  position:fixed;top:0;bottom:0;width:var(--sidew);border:0;z-index:40;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  color:#fff;font-weight:800;font-size:12.5px;line-height:1.2;text-align:center;
+  padding:8px 4px;cursor:pointer;transition:background .12s;
+  padding-top:calc(8px + var(--sat));padding-bottom:calc(8px + var(--sab));
+}
+body.playing .sidebtn{display:flex;}
+.sidebtn.left{left:0;background:linear-gradient(90deg,rgba(232,163,61,.34),rgba(232,163,61,.07));}
+.sidebtn.right{right:0;background:linear-gradient(270deg,rgba(15,163,107,.34),rgba(15,163,107,.07));}
+.sidebtn .ico{font-size:23px;}
+.sidebtn .key{font-size:10px;font-weight:700;opacity:.8;border:1px solid rgba(255,255,255,.42);border-radius:6px;padding:1px 7px;}
+.sidebtn.left.on{background:var(--gold);color:#132437;}
+.sidebtn.right.on{background:var(--accent2);color:#fff;}
+.sidebtn.left.on .key,.sidebtn.right.on .key{border-color:rgba(0,0,0,.3);}
+.sidebtn:active{filter:brightness(1.3);}
+@media (max-width:759px){
+  #play.active{padding-left:calc(6px + var(--sidew));padding-right:calc(6px + var(--sidew));}
+}
+
+/* ---------- synchronisation ---------- */
+#syncpanel{display:flex;align-items:center;flex-wrap:nowrap;gap:8px;padding:7px 10px;flex:none;margin-bottom:8px;}
+#syncpanel .selcount{margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#bcd0e8;}
+.dlgback{position:fixed;inset:0;background:rgba(4,12,25,.74);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;}
+.dlg{background:var(--bg2);border-radius:18px;padding:16px;max-width:430px;width:100%;box-shadow:0 18px 50px rgba(0,0,0,.5);max-height:88dvh;overflow-y:auto;}
+.dlg h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#bcd0e8;font-weight:700;}
+.dlglab{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#9db2cd;margin:12px 0 4px;font-weight:700;}
+.tokfield{width:100%;font-size:13px;padding:10px;border-radius:10px;border:0;background:#fff;color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;resize:vertical;}
+.dlgrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.dlghelp{font-size:11.5px;line-height:1.55;color:#9db2cd;margin:12px 0 0;}
+</style>
+
+/* ---------- photo de l'appareil ---------- */
+.photowrap{
+  position:relative;width:100%;aspect-ratio:3/2;border-radius:16px;overflow:hidden;
+  background:#0e2440 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'/>") center/cover;
+  margin:0 0 10px;display:flex;align-items:center;justify-content:center;
+}
+.photowrap img{width:100%;height:100%;object-fit:contain;display:block;}
+.photowrap .ph{color:#9db2cd;font-size:13px;text-align:center;padding:14px;line-height:1.5;}
+.photowrap .spin{
+  width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.25);
+  border-top-color:#e8a33d;animation:sp .8s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg);}}
+.photowrap .retry{margin-top:8px;}
+.credit{
+  font-size:10.5px;line-height:1.4;color:var(--muted);margin:-4px 0 8px;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.credit a{color:var(--accent);text-decoration:none;}
+.credit.masked{visibility:hidden;}
+.fact .flagtype{
+  display:inline-block;margin-left:6px;font-size:10px;font-weight:700;letter-spacing:.6px;
+  background:rgba(255,255,255,.22);border-radius:6px;padding:1px 6px;vertical-align:2px;
+}
+.card{min-height:auto;}
+.playcard-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#play.active{display:flex;flex-direction:column;height:100dvh;overflow:hidden;padding:8px 14px calc(4px + var(--sab));width:100%;}
+#play .card{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#play .controls{flex:none;}
+.meanings{gap:9px;}
+.fact .val{font-size:17px;}
+.subline{font-size:11.5px;color:#bcd0e8;text-align:center;margin:0 0 8px;}
+
+.diagout{
+  background:#0a1e38;color:#cfe0f5;border-radius:10px;padding:10px;margin:0;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;
+  max-height:46dvh;overflow:auto;white-space:pre-wrap;word-break:break-word;
+}
+.diagout .ko{color:#ff9b9b;font-weight:700;}
+.diagout .ok{color:#8fe0b8;}
+</style>
+</head>
+<body>
+
+<!-- ACCUEIL -->
+<div class="screen active" id="home">
+  <div class="titlerow">
+    <h1>✈️ Boîte à avions</h1>
+    <button class="start" id="startBtn" onclick="startSession()">Commencer ➜</button>
+  </div>
+
+  <div class="modes">
+    <button class="mode-btn selected" id="mode1btn" onclick="setMode(1)">
+      <span class="ico">🗂️</span><b>Présentation</b>
+    </button>
+    <button class="mode-btn" id="mode2btn" onclick="setMode(2)">
+      <span class="ico">🙈</span><b>Révélation</b>
+    </button>
+    <button class="mode-btn" id="mode3btn" onclick="setMode(3)">
+      <span class="ico">🎯</span><b>Quiz</b>
+    </button>
+    <button class="mode-btn" id="mode4btn" onclick="setMode(4)">
+      <span class="ico">🔍</span><b>Explorer</b>
+    </button>
+  </div>
+
+  <div class="panel" id="syncpanel">
+    <div class="selcount" id="syncstatus">☁️ Chargement…</div>
+    <button class="smallbtn" onclick="toggleSyncSetup()">Configurer</button>
+  </div>
+
+  <div class="panel" id="poolpanel">
+    <h3>Appareils utilisés</h3>
+    <div class="row">
+      <button class="chip on" data-p="tous" onclick="setPool('tous')">Tous</button>
+      <button class="chip" data-p="revoir" onclick="setPool('revoir')">🔥 À revoir</button>
+      <button class="chip" data-p="acquis" onclick="setPool('acquis')">✅ Acquis</button>
+      <button class="chip" data-p="ND" onclick="setPool('ND')">ND</button>
+    </div>
+  </div>
+
+  <div class="panel" id="quizpanel" style="display:none">
+    <h3>Questions posées</h3>
+    <div class="row">
+      <button class="chip on" data-q="mk" onclick="toggleField('mk')">Constructeur</button>
+      <button class="chip on" data-q="mo" onclick="toggleField('mo')">Modèle</button>
+      <button class="chip on" data-q="en" onclick="toggleField('en')">Motorisation</button>
+      <button class="chip on" data-q="co" onclick="toggleField('co')">Compagnie</button>
+    </div>
+  </div>
+
+  <div class="panel" id="catpanel">
+    <h3>Époques</h3>
+    <div class="smallrow">
+      <button class="smallbtn" onclick="allCats(true)">Tout cocher</button>
+      <button class="smallbtn" onclick="allCats(false)">Tout décocher</button>
+      <span class="randpick">
+        <button class="smallbtn gold" onclick="randomPick()">🎲 au hasard</button>
+        <input type="number" id="nbRand" min="1" max="200" value="20" inputmode="numeric">
+      </span>
+    </div>
+    <div class="catgrid" id="catgrid"></div>
+    <div class="selcount" id="selcount"></div>
+  </div>
+
+  <div id="expanel" style="display:none">
+    <input class="exsearch" id="exInput" type="search" placeholder="Tapez un modèle, une compagnie, un moteur…" autocomplete="off" autocapitalize="off" spellcheck="false" oninput="exSearch()">
+    <div class="exsug" id="exSug"></div>
+    <div class="card excard" id="exCard" style="display:none"></div>
+  </div>
+
+  <p class="foot" id="homefoot"></p>
+</div>
+
+<!-- CONFIGURATION DU JETON -->
+<div id="syncsetup" class="dlgback" style="display:none" onclick="if(event.target===this)toggleSyncSetup()">
+  <div class="dlg">
+    <h3>Jeton GitHub — synchronisation</h3>
+    <p class="dlglab">Dépôt (propriétaire/nom)</p>
+    <input id="ghrepo" class="tokfield" type="text" placeholder="victortisme/Boite-a-avions"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <p class="dlglab">Jeton d’accès personnel</p>
+    <textarea id="ghtoken" class="tokfield" rows="3" placeholder="Collez ici le jeton (github_pat_…)"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+    <div class="dlgrow">
+      <button class="smallbtn" onclick="pasteToken()">📋 Coller</button>
+      <button class="smallbtn" onclick="$('ghtoken').value=''">Effacer</button>
+      <button class="smallbtn gold" onclick="saveGhToken()">Enregistrer</button>
+      <button class="smallbtn" onclick="clearPhotoCache()">🗑 Vider le cache photos</button>
+      <button class="smallbtn" onclick="openDiag()">🔧 Tester les photos</button>
+      <button class="smallbtn" onclick="toggleSyncSetup()">Fermer</button>
+    </div>
+    <p class="dlghelp">
+      GitHub ▸ Settings ▸ Developer settings ▸ Personal access tokens ▸ Fine-grained tokens ▸ Generate new token.
+      Repository access : « Only select repositories » ▸ le dépôt indiqué ci-dessus. Permissions ▸ Contents : Read and write.
+      Les marquages sont écrits dans <b>avions-marques.json</b>, à la racine du dépôt ; le fichier est créé automatiquement
+      au premier enregistrement. Le jeton reste uniquement sur cet appareil.
+      Les photos proviennent de Wikimedia Commons, interrogé en direct ; elles ne sont pas stockées dans le dépôt.
+    </p>
+  </div>
+</div>
+
+<!-- DIAGNOSTIC DES PHOTOS -->
+<div id="diag" class="dlgback" style="display:none" onclick="if(event.target===this)closeDiag()">
+  <div class="dlg">
+    <h3>Test des photos — Wikimedia Commons</h3>
+    <p class="dlghelp" style="margin:0 0 10px">
+      Chaque fiche est passée au résolveur : requête Commons, puis filtrage sur le nom de fichier
+      (compagnie <b>et</b> type obligatoires, sous-versions voisines écartées). Le test remplit aussi
+      le cache local, les fiches s’afficheront ensuite instantanément.
+    </p>
+    <div class="dlgrow" style="margin:0 0 10px">
+      <button class="smallbtn gold" id="diagRun" onclick="runDiag()">▶ Lancer le test</button>
+      <button class="smallbtn" id="diagStop" onclick="stopDiag()" style="display:none">■ Arrêter</button>
+      <button class="smallbtn" onclick="copyDiag()">📋 Copier le rapport</button>
+      <button class="smallbtn" onclick="closeDiag()">Fermer</button>
+    </div>
+    <div class="selcount" id="diagStatus" style="margin:0 0 8px">Prêt.</div>
+    <pre id="diagOut" class="diagout"></pre>
+  </div>
+</div>
+
+<!-- FICHE -->
+<div class="screen" id="play">
+  <div class="topbar">
+    <button class="back" onclick="goHome()">← Menu</button>
+    <span class="counter" id="counter"></span>
+    <button class="back" onclick="shuffleNow()" title="Mélanger">🎲</button>
+  </div>
+  <div class="card" id="playcard"></div>
+  <div class="controls">
+    <button class="ctrl prev" onclick="nav(-1)">◀ Préc.</button>
+    <button class="ctrl reveal" id="revealBtn" onclick="revealOrNext()">👁 Révéler</button>
+    <button class="ctrl next" id="nextBtn" onclick="nav(1)">Suiv. ▶</button>
+  </div>
+  <p class="foot">Cliquez l’écran ou → / ↓ pour révéler · Q à revoir · D acquis · P autre photo</p>
+</div>
+
+<!-- BOUTONS LATÉRAUX DE CLASSEMENT -->
+<button class="sidebtn left" id="sideRevoir" type="button" onclick="markCurrent('revoir')" title="Marquer à revoir (Q)">
+  <span class="ico">🔥</span><span class="txt">à revoir</span><span class="key">Q</span>
+</button>
+<button class="sidebtn right" id="sideAcquis" type="button" onclick="markCurrent('acquis')" title="Marquer acquis (D)">
+  <span class="ico">✅</span><span class="txt">acquis</span><span class="key">D</span>
+</button>
+
+<!-- QUIZ -->
+<div class="screen" id="quiz">
+  <div class="topbar">
+    <button class="back" onclick="goHome()">← Menu</button>
+    <span class="counter" id="qcounter"></span>
+    <span class="score" id="qscore"></span>
+  </div>
+  <div class="card" id="quizcard"></div>
+  <div class="controls">
+    <button class="ctrl next" id="qnext" onclick="quizNext()" style="flex:1">Question suivante ▶</button>
+  </div>
+  <p class="foot">Une bonne réponse marque l’appareil comme acquis, une erreur le place à revoir</p>
+</div>
+
+<script>
+const DATA = [{"co":"American Airlines","mk":"Douglas","mo":"DC-3","en":"Pratt & Whitney R-1830-92 Twin Wasp","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"dc 3","note":"Deux 14-cylindres en double étoile, ≈ 895 kW (1 200 ch) chacun. American Airlines lança le DC-3 en 1936 avec la version couchettes DST.","q":"American Airlines Douglas DC","ta":["american airlines","american"],"tt":["dc 3","dc3"],"n":"American Airlines — Douglas DC-3"},{"co":"Air France","mk":"Douglas","mo":"DC-4","en":"Pratt & Whitney R-2000 Twin Wasp","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"dc 4","note":"Quatre étoiles de ≈ 1 080 kW. Le DC-4 ouvrit à Air France les traversées régulières de l’Atlantique Nord en 1946.","q":"Air France Douglas DC","ta":["air france"],"tt":["dc 4","dc4"],"n":"Air France — Douglas DC-4"},{"co":"KLM","mk":"Douglas","mo":"DC-6B","en":"Pratt & Whitney R-2800 Double Wasp","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"dc 6","note":"Quatre R-2800 de ≈ 1 865 kW. Le DC-6B, cabine pressurisée, est considéré comme le meilleur quadrimoteur à pistons de transport.","q":"KLM Douglas DC","ta":["klm"],"tt":["dc 6","dc6"],"n":"KLM — Douglas DC-6B"},{"co":"Pan American World Airways","mk":"Boeing","mo":"377 Stratocruiser","en":"Pratt & Whitney R-4360 Wasp Major","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"stratocruiser","note":"Quatre 28-cylindres de ≈ 2 610 kW, les plus gros moteurs à pistons jamais produits en série. Pont inférieur aménagé en bar.","q":"Pan American Boeing 377 Stratocruiser","ta":["pan am","pan american"],"tt":["377","stratocruiser"],"n":"Pan American World Airways — Boeing 377 Stratocruiser"},{"co":"TWA","mk":"Lockheed","mo":"L-1049G Super Constellation","en":"Wright R-3350 Turbo-Compound","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"1049","note":"Quatre R-3350 à récupération de gaz d’échappement, ≈ 2 535 kW. La triple dérive tenait dans les hangars de l’époque.","q":"TWA Lockheed Constellation","ta":["twa","trans world"],"tt":["1049","constellation"],"n":"TWA — Lockheed L-1049G Super Constellation","nt":["l 749","749","1649","starliner"]},{"co":"BEA","mk":"Vickers","mo":"Viscount 800","en":"Rolls-Royce Dart RDa.7 Mk 525","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"viscount 8","note":"Quatre turbopropulseurs Dart de ≈ 1 417 kW. Le Viscount fut le premier avion de ligne à turbopropulsion mis en service (1953).","q":"British European Airways Vickers Viscount","ta":["bea","british european airways"],"tt":["viscount"],"n":"BEA — Vickers Viscount 800","nt":["viscount 7"]},{"co":"BOAC","mk":"Bristol","mo":"Britannia 312","en":"Bristol Proteus 765","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"britannia","note":"Quatre Proteus de ≈ 2 800 kW. Surnommé « Whispering Giant » pour son silence relatif.","q":"BOAC Bristol Britannia","ta":["boac","british overseas airways"],"tt":["britannia"],"n":"BOAC — Bristol Britannia 312","nt":["britannia 10"]},{"co":"Eastern Air Lines","mk":"Lockheed","mo":"L-188 Electra","en":"Allison 501-D13","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"l 188","note":"Quatre turbopropulseurs de ≈ 2 800 kW. Deux ruptures d’aile en vol en 1959-1960 ont brisé la carrière commerciale de l’appareil.","q":"Eastern Air Lines Lockheed L-188 Electra","ta":["eastern air lines","eastern airlines","eastern"],"tt":["l 188","electra","l188"],"n":"Eastern Air Lines — Lockheed L-188 Electra"},{"co":"Braathens","mk":"Fokker","mo":"F27 Friendship","en":"Rolls-Royce Dart Mk 536","et":1,"c":"Hélices et turbopropulseurs (1936-1959)","pf":"f27","note":"Deux Dart de ≈ 1 730 kW. Le F27 est l’avion de ligne européen à turbopropulsion le plus produit.","q":"Braathens Fokker F27 Friendship","ta":["braathens"],"tt":["f27","f 27","friendship"],"n":"Braathens — Fokker F27 Friendship"},{"co":"BOAC","mk":"de Havilland","mo":"Comet 4","en":"Rolls-Royce Avon 524","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"comet 4","note":"Quatre Avon de ≈ 46,7 kN enterrés dans l’emplanture de l’aile. Le Comet 4 ouvrit la première liaison transatlantique à réaction en octobre 1958.","q":"BOAC de Havilland Comet 4","ta":["boac","british overseas airways"],"tt":["comet"],"n":"BOAC — de Havilland Comet 4","nt":["comet 1","comet 2","comet 3"]},{"co":"Aeroflot","mk":"Tupolev","mo":"Tu-104A","en":"Mikulin AM-3M-500","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"tu 104","note":"Deux AM-3M de ≈ 95 kN. Entre 1956 et 1958 le Tu-104 fut le seul avion de ligne à réaction en service dans le monde.","q":"Aeroflot Tupolev Tu-104","ta":["aeroflot"],"tt":["tu 104","tu104"],"n":"Aeroflot — Tupolev Tu-104A"},{"co":"Pan American World Airways","mk":"Boeing","mo":"707-321B","en":"Pratt & Whitney JT3D-3B","et":0,"c":"Premiers réacteurs (1952-1969)","pf":"707 321","note":"Quatre double-flux JT3D de ≈ 80 kN. Le code Boeing « 21 » du 707-321 désigne Pan Am, client de lancement en 1958.","q":"Pan Am Boeing 707","ta":["pan am","pan american"],"tt":["707"],"n":"Pan American World Airways — Boeing 707-321B","nt":["707 121","707 100","707 139"]},{"co":"KLM","mk":"Douglas","mo":"DC-8-63","en":"Pratt & Whitney JT3D-7","et":0,"c":"Premiers réacteurs (1952-1969)","pf":"dc 8 63","note":"Quatre JT3D-7 de ≈ 84,5 kN. Le DC-8-63, allongé de 11 m, resta le plus long avion de ligne jusqu’au 747.","q":"KLM Douglas DC","ta":["klm"],"tt":["dc 8","dc8"],"n":"KLM — Douglas DC-8-63","nt":["dc 8 3","dc 8 5"]},{"co":"Air France","mk":"Sud Aviation","mo":"Caravelle III","en":"Rolls-Royce Avon RA.29 Mk 527","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"caravelle","note":"Deux Avon de ≈ 51,6 kN. La Caravelle a inventé la formule des réacteurs à l’arrière du fuselage, copiée par toute une génération.","q":"Air France Sud Aviation Caravelle III","ta":["air france"],"tt":["caravelle"],"n":"Air France — Sud Aviation Caravelle III","nt":["caravelle 10","caravelle 12","super caravelle","caravelle vi","caravelle 6"]},{"co":"BOAC","mk":"Vickers","mo":"VC10","en":"Rolls-Royce Conway RCo.42","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"vc10","note":"Quatre Conway de ≈ 93 kN groupés à l’arrière. Conçu pour les pistes courtes et chaudes des lignes africaines.","q":"BOAC Vickers VC10","ta":["boac","british overseas airways"],"tt":["vc10","vc 10"],"n":"BOAC — Vickers VC10","nt":["super vc10"]},{"co":"Eastern Air Lines","mk":"Boeing","mo":"727-100","en":"Pratt & Whitney JT8D-7","et":0,"c":"Premiers réacteurs (1952-1969)","pf":"727 100","note":"Trois JT8D de ≈ 62 kN. Eastern fut, avec United, l’un des deux clients de lancement du 727 en 1964.","q":"Eastern Air Lines Boeing 727","ta":["eastern air lines","eastern airlines","eastern"],"tt":["727"],"n":"Eastern Air Lines — Boeing 727-100","nt":["727 200","727 2"]},{"co":"Lufthansa","mk":"Boeing","mo":"737-230","en":"Pratt & Whitney JT8D-15","et":0,"c":"Premiers réacteurs (1952-1969)","pf":"737 230","note":"Deux JT8D de ≈ 69 kN en nacelles plaquées sous l’aile. Lufthansa fut le client de lancement du 737 — le seul Boeing lancé par une compagnie non américaine.","q":"Lufthansa Boeing 737-200","ta":["lufthansa"],"tt":["737 200","737 2","737"],"n":"Lufthansa — Boeing 737-230","nt":["737 300","737 3","737 400","737 4","737 5","737 7","737 8","737 max"]},{"co":"Delta Air Lines","mk":"Douglas","mo":"DC-9-32","en":"Pratt & Whitney JT8D-9","et":0,"c":"Premiers réacteurs (1952-1969)","pf":"dc 9 3","note":"Deux JT8D de ≈ 64,5 kN. Delta a exploité le DC-9 puis ses dérivés MD-80 et 717 pendant plus de cinquante ans.","q":"Delta Air Lines Douglas DC","ta":["delta air lines","delta"],"tt":["dc 9","dc9"],"n":"Delta Air Lines — Douglas DC-9-32","nt":["dc 9 1","dc 9 4","dc 9 5"]},{"co":"British Caledonian","mk":"BAC","mo":"One-Eleven 500","en":"Rolls-Royce Spey Mk 512-14DW","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"one eleven","note":"Deux Spey de ≈ 55,8 kN. Le BAC 1-11 fut le premier biréacteur court-courrier britannique à succès à l’exportation.","q":"British Caledonian BAC One-Eleven","ta":["british caledonian","caledonian"],"tt":["one eleven","1 11","bac111"],"n":"British Caledonian — BAC One-Eleven 500","nt":["one eleven 2","one eleven 4","1 11 2","1 11 4"]},{"co":"BEA","mk":"Hawker Siddeley","mo":"Trident 2E","en":"Rolls-Royce Spey Mk 512","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"trident","note":"Trois Spey de ≈ 53 kN. Le Trident réalisa le premier atterrissage automatique d’un vol commercial en 1965.","q":"British European Airways Hawker Siddeley Trident","ta":["bea","british european airways"],"tt":["trident"],"n":"BEA — Hawker Siddeley Trident 2E"},{"co":"Aeroflot","mk":"Ilyushin","mo":"Il-62","en":"Kuznetsov NK-8-4","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"il 62","note":"Quatre NK-8 de ≈ 103 kN en quadruple grappe arrière, formule unique. Une roulette escamotable de queue évitait le basculement au chargement.","q":"Aeroflot Ilyushin Il-62","ta":["aeroflot"],"tt":["il 62","il62"],"n":"Aeroflot — Ilyushin Il-62"},{"co":"Interflug","mk":"Tupolev","mo":"Tu-134","en":"Soloviev D-30","et":1,"c":"Premiers réacteurs (1952-1969)","pf":"tu 134","note":"Deux D-30 de ≈ 66,7 kN. Les premières séries gardaient un nez vitré de bombardier, hérité du Tu-16.","q":"Interflug Tupolev Tu-134","ta":["interflug"],"tt":["tu 134","tu134"],"n":"Interflug — Tupolev Tu-134"},{"co":"Pan American World Airways","mk":"Boeing","mo":"747-121","en":"Pratt & Whitney JT9D-7A","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"747 121","note":"Quatre JT9D de ≈ 206 kN, premiers turboréacteurs à très fort taux de dilution. Pan Am, client de lancement, mit le 747 en ligne le 22 janvier 1970.","q":"Pan American World Airways Boeing 747","ta":["pan am","pan american"],"tt":["747 100","747 121","747"],"n":"Pan American World Airways — Boeing 747-121","nt":["747sp","747 sp","747 200","747 2","747 400","747 4","747 8"]},{"co":"Lufthansa","mk":"Boeing","mo":"747-230B","en":"Pratt & Whitney JT9D-7Q","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"747 230","note":"Quatre JT9D-7Q de ≈ 236 kN. Lufthansa exploita aussi la version cargo à nez relevable.","q":"Lufthansa Boeing 747-200","ta":["lufthansa"],"tt":["747 200","747 230","747"],"n":"Lufthansa — Boeing 747-230B","nt":["747sp","747 sp","747 100","747 1","747 400","747 4","747 8"]},{"co":"British Airways","mk":"Aérospatiale/BAC","mo":"Concorde","en":"Rolls-Royce/Snecma Olympus 593 Mk 610","et":1,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"concorde","note":"Quatre Olympus de ≈ 169 kN avec réchauffe. Seul avion de ligne à croisière supersonique durable (Mach 2,02) avec le Tu-144.","q":"British Airways Aérospatiale/BAC Concorde","ta":["british airways"],"tt":["concorde"],"n":"British Airways — Aérospatiale/BAC Concorde"},{"co":"Air France","mk":"Aérospatiale/BAC","mo":"Concorde","en":"Rolls-Royce/Snecma Olympus 593 Mk 610","et":1,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"concorde","note":"Mise en service simultanée avec British Airways le 21 janvier 1976. Air France exploita sept appareils jusqu’en 2003.","q":"Air France Aérospatiale/BAC Concorde","ta":["air france"],"tt":["concorde"],"n":"Air France — Aérospatiale/BAC Concorde"},{"co":"Swissair","mk":"McDonnell Douglas","mo":"DC-10-30","en":"General Electric CF6-50C2","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"dc 10 30","note":"Trois CF6-50 de ≈ 233 kN, dont un dans la dérive. Swissair fut client de lancement de la version intercontinentale -30.","q":"Swissair McDonnell Douglas DC","ta":["swissair"],"tt":["dc 10","dc10"],"n":"Swissair — McDonnell Douglas DC-10-30"},{"co":"Eastern Air Lines","mk":"Lockheed","mo":"L-1011-1 TriStar","en":"Rolls-Royce RB211-22B","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"l 1011","note":"Trois RB211 de ≈ 187 kN. Le développement du RB211 provoqua la faillite de Rolls-Royce en 1971.","q":"Eastern Air Lines Lockheed L-1011 TriStar","ta":["eastern air lines","eastern airlines","eastern"],"tt":["l 1011","tristar","l1011"],"n":"Eastern Air Lines — Lockheed L-1011-1 TriStar"},{"co":"Air France","mk":"Airbus","mo":"A300B4-203","en":"General Electric CF6-50C2","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"a300b4","note":"Deux CF6-50 de ≈ 233 kN. Premier avion d’Airbus et premier biréacteur gros-porteur du monde.","q":"Air France Airbus A300B4","ta":["air france"],"tt":["a300"],"n":"Air France — Airbus A300B4-203"},{"co":"Lufthansa","mk":"Airbus","mo":"A310-304","en":"General Electric CF6-80C2A2","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"a310 30","note":"Deux CF6-80C2 de ≈ 239 kN. Le code Airbus « 04 » identifie ce couple motoriste/version chez General Electric.","q":"Lufthansa Airbus A310","ta":["lufthansa"],"tt":["a310"],"n":"Lufthansa — Airbus A310-304"},{"co":"Southwest Airlines","mk":"Boeing","mo":"737-3H4","en":"CFM International CFM56-3B1","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"737 3h4","note":"Deux CFM56-3 de ≈ 89 kN. La soufflante trop grande pour la garde au sol a imposé la nacelle aplatie en bas, signature du 737 classique.","q":"Southwest Airlines Boeing 737-300","ta":["southwest airlines","southwest"],"tt":["737 300","737 3h4","737 3"],"n":"Southwest Airlines — Boeing 737-3H4","nt":["737 5","737 7","737 8","737 max"]},{"co":"British Airways","mk":"Boeing","mo":"757-236","en":"Rolls-Royce RB211-535E4","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"757 236","note":"Deux RB211-535 de ≈ 178 kN. British Airways fut, avec Eastern, client de lancement du 757 en 1983.","q":"British Airways Boeing 757","ta":["british airways"],"tt":["757"],"n":"British Airways — Boeing 757-236"},{"co":"Delta Air Lines","mk":"Boeing","mo":"767-332ER","en":"General Electric CF6-80C2B6","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"767 332","note":"Deux CF6-80C2 de ≈ 273 kN. Delta reçut le tout premier 767 livré, en 1982.","q":"Delta Air Lines Boeing 767","ta":["delta air lines","delta"],"tt":["767"],"n":"Delta Air Lines — Boeing 767-332ER","nt":["767 400","767 4"]},{"co":"Alitalia","mk":"McDonnell Douglas","mo":"MD-82","en":"Pratt & Whitney JT8D-217C","et":0,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"md 82","note":"Deux JT8D-200 de ≈ 89 kN, version à grande soufflante du JT8D. Alitalia exploita l’une des plus grandes flottes de MD-80 d’Europe.","q":"Alitalia McDonnell Douglas MD","ta":["alitalia"],"tt":["md 82","md82","md 80","md80"],"n":"Alitalia — McDonnell Douglas MD-82","nt":["md 11"]},{"co":"Aeroflot","mk":"Ilyushin","mo":"Il-86","en":"Kuznetsov NK-86","et":1,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"il 86","note":"Quatre NK-86 de ≈ 127 kN. Premier gros-porteur soviétique ; les passagers montaient par des escaliers intégrés au fuselage.","q":"Aeroflot Ilyushin Il-86","ta":["aeroflot"],"tt":["il 86","il86"],"n":"Aeroflot — Ilyushin Il-86"},{"co":"Aeroflot","mk":"Tupolev","mo":"Tu-154M","en":"Soloviev D-30KU-154","et":1,"c":"Gros-porteurs et supersonique (1970-1989)","pf":"tu 154","note":"Trois D-30KU de ≈ 104 kN. Le train principal à six roues en bogie permettait l’usage de pistes sommaires.","q":"Aeroflot Tupolev Tu-154","ta":["aeroflot"],"tt":["tu 154","tu154"],"n":"Aeroflot — Tupolev Tu-154M"},{"co":"Air France","mk":"Airbus","mo":"A320-214","en":"CFM International CFM56-5B4","et":0,"c":"Génération numérique (1988-2007)","pf":"a320 214","note":"Deux CFM56-5B de ≈ 120 kN. Le suffixe « 14 » du A320-214 code exactement ce moteur dans la nomenclature Airbus.","q":"Air France Airbus A320","ta":["air france"],"tt":["a320"],"n":"Air France — Airbus A320-214","nt":["neo"]},{"co":"JetBlue Airways","mk":"Airbus","mo":"A320-232","en":"IAE V2527-A5","et":0,"c":"Génération numérique (1988-2007)","pf":"a320 232","note":"Deux V2500 de ≈ 111 kN. Le suffixe « 32 » désigne International Aero Engines : JetBlue a construit toute sa flotte A320 sur ce moteur.","q":"JetBlue Airways Airbus A320","ta":["jetblue"],"tt":["a320"],"n":"JetBlue Airways — Airbus A320-232","nt":["neo"]},{"co":"Lufthansa","mk":"Airbus","mo":"A321-231","en":"IAE V2533-A5","et":0,"c":"Génération numérique (1988-2007)","pf":"a321 231","note":"Deux V2533 de ≈ 147 kN, version poussée du V2500 pour l’A321.","q":"Lufthansa Airbus A321","ta":["lufthansa"],"tt":["a321"],"n":"Lufthansa — Airbus A321-231","nt":["neo"]},{"co":"British Airways","mk":"Airbus","mo":"A319-131","en":"IAE V2522-A5","et":0,"c":"Génération numérique (1988-2007)","pf":"a319 131","note":"Deux V2522 de ≈ 98 kN. L’A319 est un A320 raccourci de sept cadres de fuselage.","q":"British Airways Airbus A319","ta":["british airways"],"tt":["a319"],"n":"British Airways — Airbus A319-131","nt":["neo"]},{"co":"Air France","mk":"Airbus","mo":"A318-111","en":"CFM International CFM56-5B8","et":0,"c":"Génération numérique (1988-2007)","pf":"a318","note":"Deux CFM56-5B8 de ≈ 96 kN. Le plus petit membre de la famille A320 ; Air France en fut le principal exploitant.","q":"Air France Airbus A318","ta":["air france"],"tt":["a318"],"n":"Air France — Airbus A318-111"},{"co":"United Airlines","mk":"Boeing","mo":"777-222ER","en":"Pratt & Whitney PW4090","et":0,"c":"Génération numérique (1988-2007)","pf":"777 222","note":"Deux PW4090 de ≈ 400 kN. United fut client de lancement du 777 et effectua son premier vol commercial en juin 1995.","q":"United Airlines Boeing 777-200","ta":["united airlines","united"],"tt":["777 200","777 222","777 2"],"n":"United Airlines — Boeing 777-222ER","nt":["777 3"]},{"co":"Emirates","mk":"Boeing","mo":"777-31HER","en":"General Electric GE90-115B","et":0,"c":"Génération numérique (1988-2007)","pf":"777 31h","note":"Deux GE90-115B de ≈ 513 kN, les turboréacteurs les plus puissants du monde. Emirates est le premier exploitant mondial du 777.","q":"Emirates Boeing 777-300ER","ta":["emirates"],"tt":["777 300","777 31h","777 3"],"n":"Emirates — Boeing 777-31HER","nt":["777 2"]},{"co":"Cathay Pacific","mk":"Airbus","mo":"A330-343","en":"Rolls-Royce Trent 772B-60","et":0,"c":"Génération numérique (1988-2007)","pf":"a330 343","note":"Deux Trent 700 de ≈ 316 kN. Le suffixe « 43 » identifie Rolls-Royce dans la nomenclature Airbus.","q":"Cathay Pacific Airbus A330","ta":["cathay pacific","cathay"],"tt":["a330"],"n":"Cathay Pacific — Airbus A330-343","nt":["neo","a330 9"]},{"co":"Lufthansa","mk":"Airbus","mo":"A340-313","en":"CFM International CFM56-5C4","et":0,"c":"Génération numérique (1988-2007)","pf":"a340 313","note":"Quatre CFM56-5C de ≈ 151 kN. L’A340-300 partage sa voilure et son fuselage avec l’A330 bimoteur.","q":"Lufthansa Airbus A340-300","ta":["lufthansa"],"tt":["a340 300","a340 313","a340 3"],"n":"Lufthansa — Airbus A340-313","nt":["a340 6","a340 5"]},{"co":"Virgin Atlantic","mk":"Airbus","mo":"A340-642","en":"Rolls-Royce Trent 556-61","et":0,"c":"Génération numérique (1988-2007)","pf":"a340 642","note":"Quatre Trent 500 de ≈ 249 kN. L’A340-600 fut, jusqu’au 747-8, l’avion de ligne le plus long jamais construit (75,4 m).","q":"Virgin Atlantic Airbus A340-600","ta":["virgin atlantic"],"tt":["a340 600","a340 642","a340 6"],"n":"Virgin Atlantic — Airbus A340-642","nt":["a340 3"]},{"co":"British Airways","mk":"Boeing","mo":"747-436","en":"Rolls-Royce RB211-524H","et":0,"c":"Génération numérique (1988-2007)","pf":"747 436","note":"Quatre RB211-524 de ≈ 258 kN. British Airways fut le plus gros exploitant mondial du 747-400.","q":"British Airways Boeing 747-400","ta":["british airways"],"tt":["747 400","747 436","747 4"],"n":"British Airways — Boeing 747-436","nt":["747 8","747 83"]},{"co":"Ryanair","mk":"Boeing","mo":"737-8AS","en":"CFM International CFM56-7B26","et":0,"c":"Génération numérique (1988-2007)","pf":"737 8as","note":"Deux CFM56-7B de ≈ 117 kN. Ryanair a bâti tout son modèle sur une flotte d’un seul type et d’un seul moteur.","q":"Ryanair Boeing 737-800","ta":["ryanair"],"tt":["737 800","737 8as","737 8"],"n":"Ryanair — Boeing 737-8AS","nt":["max"]},{"co":"KLM","mk":"McDonnell Douglas","mo":"MD-11","en":"General Electric CF6-80C2D1F","et":0,"c":"Génération numérique (1988-2007)","pf":"md 11","note":"Trois CF6-80C2 de ≈ 274 kN. KLM exploita le dernier vol passagers d’un MD-11 en octobre 2014.","q":"KLM McDonnell Douglas MD","ta":["klm"],"tt":["md 11","md11"],"n":"KLM — McDonnell Douglas MD-11"},{"co":"Hawaiian Airlines","mk":"Boeing","mo":"717-200","en":"Rolls-Royce BR715","et":0,"c":"Génération numérique (1988-2007)","pf":"717 2","note":"Deux BR715 de ≈ 82 kN. Le 717 est l’ultime descendant du DC-9, rebaptisé après le rachat de McDonnell Douglas par Boeing.","q":"Hawaiian Airlines Boeing 717","ta":["hawaiian airlines","hawaiian"],"tt":["717"],"n":"Hawaiian Airlines — Boeing 717-200"},{"co":"Lufthansa CityLine","mk":"Bombardier","mo":"CRJ200","en":"General Electric CF34-3B1","et":0,"c":"Génération numérique (1988-2007)","pf":"crj200","note":"Deux CF34 de ≈ 41 kN. Le CRJ dérive du biréacteur d’affaires Challenger 600.","q":"Lufthansa CityLine Bombardier CRJ200","ta":["lufthansa cityline","lufthansa regional","lufthansa"],"tt":["crj200","crj 200","crj"],"n":"Lufthansa CityLine — Bombardier CRJ200","nt":["crj900","crj 900","crj700","crj 700","crj1000","crj 1000"]},{"co":"American Eagle","mk":"Embraer","mo":"ERJ 145","en":"Rolls-Royce AE 3007A1","et":0,"c":"Génération numérique (1988-2007)","pf":"erj 145","note":"Deux AE 3007 de ≈ 33,7 kN. L’ERJ 145 est un Brasilia allongé et remotorisé en réacteurs.","q":"American Eagle Embraer ERJ 145","ta":["american eagle","envoy air"],"tt":["erj 145","erj145","emb 145"],"n":"American Eagle — Embraer ERJ 145"},{"co":"KLM Cityhopper","mk":"Embraer","mo":"190","en":"General Electric CF34-10E","et":0,"c":"Génération numérique (1988-2007)","pf":"embraer 190","note":"Deux CF34-10E de ≈ 82 kN. L’E-Jet a été le premier régional à offrir une cabine sans siège du milieu (2+2).","q":"KLM Cityhopper Embraer 190","ta":["klm cityhopper","klm"],"tt":["embraer 190","erj 190","e190","190"],"n":"KLM Cityhopper — Embraer 190","nt":["e195","erj 195","embraer 195","e2"]},{"co":"KLM Cityhopper","mk":"Fokker","mo":"100","en":"Rolls-Royce Tay 650-15","et":0,"c":"Génération numérique (1988-2007)","pf":"fokker 100","note":"Deux Tay de ≈ 67 kN. Dernier avion de ligne conçu par Fokker avant la faillite de 1996.","q":"KLM Cityhopper Fokker 100","ta":["klm cityhopper","klm"],"tt":["fokker 100","f100"],"n":"KLM Cityhopper — Fokker 100"},{"co":"Emirates","mk":"Airbus","mo":"A380-861","en":"Engine Alliance GP7270","et":0,"c":"Génération numérique (1988-2007)","pf":"a380 861","note":"Quatre GP7270 de ≈ 310 kN, coentreprise General Electric / Pratt & Whitney. Emirates exploite plus de la moitié des A380 construits.","q":"Emirates Airbus A380","ta":["emirates"],"tt":["a380"],"n":"Emirates — Airbus A380-861"},{"co":"Singapore Airlines","mk":"Airbus","mo":"A380-841","en":"Rolls-Royce Trent 970B-84","et":0,"c":"Génération numérique (1988-2007)","pf":"a380 841","note":"Quatre Trent 900 de ≈ 311 kN. Singapore Airlines mit l’A380 en service la première, le 25 octobre 2007.","q":"Singapore Airlines Airbus A380","ta":["singapore airlines","singapore"],"tt":["a380"],"n":"Singapore Airlines — Airbus A380-841"},{"co":"Japan Airlines","mk":"Boeing","mo":"787-9","en":"General Electric GEnx-1B","et":0,"c":"Aujourd’hui (2010-)","pf":"787 9","note":"Deux GEnx-1B de ≈ 320 kN. Japan Airlines a retenu le GEnx pour l’ensemble de sa flotte 787, à la différence d’ANA.","q":"Japan Airlines Boeing 787","ta":["japan airlines","jal"],"tt":["787 9","787"],"n":"Japan Airlines — Boeing 787-9","nt":["787 8","787 10"]},{"co":"Virgin Atlantic","mk":"Boeing","mo":"787-9","en":"Rolls-Royce Trent 1000","et":0,"c":"Aujourd’hui (2010-)","pf":"787 9","note":"Deux Trent 1000 de ≈ 330 kN. Le 787 fut le premier avion de ligne à structure majoritairement composite.","q":"Virgin Atlantic Boeing 787","ta":["virgin atlantic"],"tt":["787 9","787"],"n":"Virgin Atlantic — Boeing 787-9","nt":["787 8","787 10"]},{"co":"Singapore Airlines","mk":"Boeing","mo":"787-10","en":"Rolls-Royce Trent 1000 TEN","et":0,"c":"Aujourd’hui (2010-)","pf":"787 10","note":"Deux Trent 1000 TEN de ≈ 338 kN. Singapore Airlines fut client de lancement du 787-10 en 2018.","q":"Singapore Airlines Boeing 787","ta":["singapore airlines","singapore"],"tt":["787 10"],"n":"Singapore Airlines — Boeing 787-10"},{"co":"Lufthansa","mk":"Boeing","mo":"747-830","en":"General Electric GEnx-2B67","et":0,"c":"Aujourd’hui (2010-)","pf":"747 8","note":"Quatre GEnx-2B de ≈ 296 kN. Lufthansa fut client de lancement de la version passagers du 747-8.","q":"Lufthansa Boeing 747-8","ta":["lufthansa"],"tt":["747 8","747 830"],"n":"Lufthansa — Boeing 747-830"},{"co":"Qatar Airways","mk":"Airbus","mo":"A350-941","en":"Rolls-Royce Trent XWB-84","et":0,"c":"Aujourd’hui (2010-)","pf":"a350 941","note":"Deux Trent XWB de ≈ 374 kN, seul moteur proposé sur l’A350. Qatar Airways fut client de lancement en janvier 2015.","q":"Qatar Airways Airbus A350-900","ta":["qatar airways","qatar"],"tt":["a350 900","a350 941","a350 9"],"n":"Qatar Airways — Airbus A350-941","nt":["a350 10"]},{"co":"British Airways","mk":"Airbus","mo":"A350-1041","en":"Rolls-Royce Trent XWB-97","et":0,"c":"Aujourd’hui (2010-)","pf":"a350 1041","note":"Deux Trent XWB-97 de ≈ 431 kN, la version la plus puissante jamais produite par Rolls-Royce.","q":"British Airways Airbus A350-1000","ta":["british airways"],"tt":["a350 1000","a350 1041","a350 10"],"n":"British Airways — Airbus A350-1041","nt":["a350 9"]},{"co":"TAP Air Portugal","mk":"Airbus","mo":"A330-941","en":"Rolls-Royce Trent 7000","et":0,"c":"Aujourd’hui (2010-)","pf":"a330 941","note":"Deux Trent 7000 de ≈ 324 kN. TAP fut client de lancement de l’A330neo en 2018.","q":"TAP Air Portugal Airbus A330neo","ta":["tap air portugal","tap portugal","tap"],"tt":["a330neo","a330 900","a330 941","a330 9"],"n":"TAP Air Portugal — Airbus A330-941","nt":["a330 2","a330 3"]},{"co":"airBaltic","mk":"Airbus","mo":"A220-300","en":"Pratt & Whitney PW1524G","et":0,"c":"Aujourd’hui (2010-)","pf":"a220 300","note":"Deux PW1500G à réducteur de ≈ 104 kN. airBaltic est la première compagnie à n’exploiter que des A220.","q":"airBaltic Airbus A220","ta":["airbaltic","air baltic"],"tt":["a220 300","a220"],"n":"airBaltic — Airbus A220-300"},{"co":"easyJet","mk":"Airbus","mo":"A320-251N","en":"CFM International LEAP-1A26","et":0,"c":"Aujourd’hui (2010-)","pf":"a320 251n","note":"Deux LEAP-1A de ≈ 120 kN. Le suffixe « 51N » code le LEAP ; « 71N » désignerait le Pratt & Whitney PW1100G.","q":"easyJet Airbus A320neo","ta":["easyjet"],"tt":["a320neo","a320 251n","a320 251"],"n":"easyJet — Airbus A320-251N"},{"co":"Wizz Air","mk":"Airbus","mo":"A321-271NX","en":"Pratt & Whitney PW1133G-JM","et":0,"c":"Aujourd’hui (2010-)","pf":"a321 271","note":"Deux PW1100G à réducteur de ≈ 147 kN. Le « X » de -271NX marque la version à rayon d’action accru (ACF).","q":"Wizz Air Airbus A321neo","ta":["wizz air","wizzair"],"tt":["a321neo","a321 271nx","a321 271"],"n":"Wizz Air — Airbus A321-271NX"},{"co":"Ryanair","mk":"Boeing","mo":"737 MAX 8-200","en":"CFM International LEAP-1B27","et":0,"c":"Aujourd’hui (2010-)","pf":"max 8","note":"Deux LEAP-1B de ≈ 130 kN. La version 8-200, spécifique à Ryanair, ajoute une porte pour autoriser 200 sièges.","q":"Ryanair Boeing 737 MAX","ta":["ryanair"],"tt":["737 max","max 8","737 8 200","737max"],"n":"Ryanair — Boeing 737 MAX 8-200"},{"co":"Helvetic Airways","mk":"Embraer","mo":"E195-E2","en":"Pratt & Whitney PW1900G","et":0,"c":"Aujourd’hui (2010-)","pf":"e195 e2","note":"Deux PW1900G à réducteur de ≈ 103 kN. Helvetic fut client de lancement européen de l’E195-E2.","q":"Helvetic Airways Embraer E195-E2","ta":["helvetic"],"tt":["e195 e2","e195e2","e195"],"n":"Helvetic Airways — Embraer E195-E2","nt":["e190"]},{"co":"Air Nostrum","mk":"ATR","mo":"72-600","en":"Pratt & Whitney Canada PW127M","et":0,"c":"Aujourd’hui (2010-)","pf":"atr 72 600","note":"Deux turbopropulseurs PW127 de ≈ 2 050 kW. L’ATR 72 domine le marché du régional à hélices depuis les années 1990.","q":"Air Nostrum ATR 72-600","ta":["air nostrum","iberia regional"],"tt":["atr 72 600","atr 72","atr72"],"n":"Air Nostrum — ATR 72-600","nt":["atr 72 500","72 500","atr 72 200"]},{"co":"Aeroflot","mk":"Sukhoi","mo":"Superjet 100-95B","en":"PowerJet SaM146","et":0,"c":"Aujourd’hui (2010-)","pf":"superjet 100","note":"Deux SaM146 de ≈ 77 kN, coentreprise Safran / NPO Saturn. Aeroflot en fut le principal exploitant.","q":"Aeroflot Sukhoi Superjet 100","ta":["aeroflot"],"tt":["superjet","ssj 100","rrj 95"],"n":"Aeroflot — Sukhoi Superjet 100-95B"},{"co":"China Eastern Airlines","mk":"Comac","mo":"C919","en":"CFM International LEAP-1C","et":0,"c":"Aujourd’hui (2010-)","pf":"c919","note":"Deux LEAP-1C de ≈ 137 kN. China Eastern a effectué le premier vol commercial du C919 le 28 mai 2023.","q":"China Eastern Comac C919","ta":["china eastern"],"tt":["c919","c 919"],"n":"China Eastern Airlines — Comac C919"}];
+const ERAS = ["Hélices et turbopropulseurs (1936-1959)","Premiers réacteurs (1952-1969)","Gros-porteurs et supersonique (1970-1989)","Génération numérique (1988-2007)","Aujourd’hui (2010-)"];
+const LAB = {mk:"Constructeur", mo:"Modèle", en:"Motorisation", co:"Compagnie"};
+const ORDER = ['mk','mo','en','co'];
+const NB = DATA.length;
+const FOOT = NB + ' appareils — de 1936 à aujourd’hui · photos Wikimedia Commons';
+
+const $ = id => document.getElementById(id);
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const normf = s => norm(s).replace(/[^a-z0-9]+/g,' ').trim();
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const jsq = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+/* ---------- stockage (dégradation propre si indisponible) ---------- */
+const mem = {};
+const store = {
+  get(k){ try{ const v = localStorage.getItem(k); return v===null? (k in mem? mem[k]:null) : v; }catch(e){ return k in mem? mem[k]:null; } },
+  set(k,v){ mem[k]=v; try{ localStorage.setItem(k,v); }catch(e){} },
+  del(k){ delete mem[k]; try{ localStorage.removeItem(k); }catch(e){} }
+};
+let marks = {};
+try{ marks = JSON.parse(store.get('bav_marks')||'{}') || {}; }catch(e){ marks = {}; }
+try{
+  if(!Object.keys(marks).length){
+    const bak = JSON.parse(store.get('bav_marks_bak')||'null');
+    if(bak && typeof bak === 'object' && Object.keys(bak).length) marks = bak;
+  }
+}catch(e){}
+
+const markOf = n => marks[n] || 'ND';
+function saveMarks(){
+  const payload = JSON.stringify(marks);
+  store.set('bav_marks', payload);
+  if(Object.keys(marks).length) store.set('bav_marks_bak', payload);
+}
+function setMark(n,s){
+  if(s==='ND') delete marks[n]; else marks[n]=s;
+  markRev++;
+  saveMarks();
+  scheduleGhSave();
+}
+function nbAcquis(){ return Object.values(marks).filter(v=>v==='acquis').length; }
+function nbRevoir(){ return Object.values(marks).filter(v=>v==='revoir').length; }
+
+/* ---------- photos Wikimedia Commons (interrogation en direct) ----------
+   Aucune liste de fichiers n'est figée dans l'application : pour chaque fiche
+   on interroge l'API de Commons, on ne retient que les fichiers dont le NOM
+   contient tous les jetons attendus (compagnie + type), et l'on privilégie
+   ceux qui portent la sous-version exacte. Le résultat est mis en cache
+   localement pendant trente jours. */
+const COMMONS = 'https://commons.wikimedia.org/w/api.php';
+const PHOTO_TTL = 30*24*3600*1000;
+const PHOTO_MAX = 12;
+const photoMem = {};          // n -> {list:[...], i:0}
+let photoSeq = 0;             // annule l'affichage d'une photo devenue obsolète
+
+const pkey = n => 'bav_ph_' + n;
+
+function stripTags(h){
+  const d = document.createElement('div');
+  d.innerHTML = h || '';
+  return (d.textContent || '').replace(/\s+/g,' ').trim().slice(0,90);
+}
+
+async function commonsQuery(search, limit){
+  const u = COMMONS
+    + '?action=query&format=json&formatversion=2&origin=*'
+    + '&generator=search&gsrnamespace=6&gsrlimit=' + limit
+    + '&gsrsearch=' + encodeURIComponent(search + ' filetype:bitmap')
+    + '&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1280'
+    + '&iiextmetadatafilter=Artist|LicenseShortName|LicenseUrl';
+  const r = await fetch(u);
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  return (j.query && j.query.pages) || [];
+}
+
+/* Un jeton est reconnu d'abord comme suite de mots entiers (« a320 » ne doit
+   pas être satisfait par « a320neo »), puis, si rien ne sort, en simple
+   sous-chaîne. La compagnie n'est JAMAIS relâchée : une photo dont le nom de
+   fichier ne nomme pas la compagnie de la fiche est rejetée, faute de quoi la
+   ligne « Compagnie » mentirait sur l'image affichée. */
+function hasWord(t, k){
+  const kk = normf(k);
+  if(!kk) return false;
+  // début de mot obligatoire ; un suffixe alphabétique est toléré
+  // (« 777 300 » reconnaît « 777 300ER »), un suffixe chiffré ne l'est pas
+  // (« 737 3 » ne doit pas reconnaître « 737 300 »).
+  return new RegExp('(^| )' + kk.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(?![0-9])').test(t);
+}
+function keepPages(pages, p, loose){
+  const hit = loose ? ((t,k)=>t.includes(normf(k))) : hasWord;
+  const pf = p.pf? normf(p.pf) : '';
+  const nt = p.nt || [];
+  const out = [];
+  pages.forEach(pg=>{
+    const name = String(pg.title||'').replace(/^File:/i,'');
+    if(!/\.(jpe?g|png)$/i.test(name)) return;
+    const t = normf(name);
+    if(nt.some(k=>t.includes(normf(k)))) return;   // sous-version voisine : écartée
+    if(!p.ta.some(k=>hit(t,k))) return;            // compagnie : jamais relâchée
+    if(!p.tt.some(k=>hit(t,k))) return;
+    const ii = pg.imageinfo && pg.imageinfo[0];
+    if(!ii || !ii.thumburl) return;
+    const em = ii.extmetadata || {};
+    out.push({
+      u: ii.thumburl,
+      d: ii.descriptionurl,
+      t: name,
+      a: stripTags(em.Artist && em.Artist.value),
+      l: (em.LicenseShortName && em.LicenseShortName.value) || '',
+      s: (pf && t.includes(pf)) ? 1 : 0
+    });
+  });
+  out.sort((x,y)=>y.s-x.s);
+  return out;
+}
+
+/* Plusieurs requêtes, du plus précis au plus large. On ne s'arrête pas à la
+   première qui donne un résultat : on accumule jusqu'à disposer d'un choix
+   suffisant, sinon les types anciens (DC-6, Viscount, Britannia) n'auraient
+   qu'une seule photo et la fiche montrerait toujours la même image.
+   Le filtre, lui, ne bouge pas : compagnie et type restent obligatoires. */
+const PHOTO_ENOUGH = 8;
+function queries(p){
+  const a0 = p.ta[0], aN = p.ta[p.ta.length-1], t0 = p.tt[0];
+  return [
+    p.q + ' ' + p.mo,
+    p.q,
+    p.co + ' ' + p.mk + ' ' + p.mo,
+    p.co + ' ' + p.mo,
+    p.mk + ' ' + p.mo + ' ' + p.co,
+    a0 + ' ' + t0,
+    aN + ' ' + p.mk + ' ' + t0
+  ];
+}
+
+async function fetchPhotos(p){
+  const byName = new Map();
+  let seen = [], last = null;
+  for(const q of queries(p)){
+    let pages = [];
+    try{ pages = await commonsQuery(q, 50); }
+    catch(e){ last = e; continue; }
+    seen = seen.concat(pages);
+    keepPages(pages, p, false).forEach(x=>{ if(!byName.has(x.t)) byName.set(x.t, x); });
+    if(byName.size >= PHOTO_ENOUGH) break;
+  }
+  if(!byName.size){
+    // dernier recours : appariement en sous-chaîne sur tout ce qui a été vu
+    keepPages(seen, p, true).forEach(x=>{ if(!byName.has(x.t)) byName.set(x.t, x); });
+  }
+  if(!byName.size && last) throw last;
+  return [...byName.values()].sort((x,y)=>y.s-x.s).slice(0, PHOTO_MAX);
+}
+
+async function getPhotos(p){
+  if(photoMem[p.n]) return photoMem[p.n].list;
+  try{
+    const c = JSON.parse(store.get(pkey(p.n)) || 'null');
+    if(c && c.t && (Date.now() - c.t) < PHOTO_TTL && Array.isArray(c.v) && c.v.length){
+      photoMem[p.n] = {list:c.v, i:0};
+      return c.v;
+    }
+  }catch(e){}
+  const list = await fetchPhotos(p);
+  photoMem[p.n] = {list, i:0};
+  if(list.length){ try{ store.set(pkey(p.n), JSON.stringify({t:Date.now(), v:list})); }catch(e){} }
+  return list;
+}
+
+function clearPhotoCache(){
+  let n = 0;
+  try{
+    const keys = [];
+    for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.indexOf('bav_ph_')===0) keys.push(k); }
+    keys.forEach(k=>{ store.del(k); n++; });
+  }catch(e){}
+  Object.keys(photoMem).forEach(k=>delete photoMem[k]);
+  alert(n + ' photo(s) retirée(s) du cache. Les fiches seront rechargées depuis Commons.');
+}
+
+function commonsSearchUrl(p){
+  return 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(p.q) + '&title=Special:MediaSearch&type=image';
+}
+
+/* Affiche la photo dans #photo ; met à jour #credit (masqué tant que tout
+   n'est pas révélé, le nom du fichier trahissant la réponse). */
+async function showPhoto(p, step){
+  const seq = ++photoSeq;
+  const box = $('photo'), cr = $('credit');
+  if(!box) return;
+  box.innerHTML = '<div class="spin"></div>';
+  if(cr) cr.innerHTML = '';
+  let list;
+  try{ list = await getPhotos(p); }
+  catch(e){
+    if(seq!==photoSeq) return;
+    box.innerHTML = '<div class="ph">Commons injoignable — ' + esc(e.message||'erreur réseau') +
+      '<br><button class="smallbtn retry" onclick="retryPhoto()">Réessayer</button></div>';
+    return;
+  }
+  if(seq!==photoSeq) return;
+  if(!list.length){
+    box.innerHTML = '<div class="ph">Aucune photo trouvée sur Commons pour cette fiche.' +
+      '<br><button class="smallbtn retry" onclick="retryPhoto()">Réessayer</button></div>';
+    return;
+  }
+  const st = photoMem[p.n];
+  if(step) st.i = (st.i + step + list.length) % list.length;
+  const ph = list[st.i];
+  const img = new Image();
+  img.alt = 'Photographie d’un avion de ligne';
+  img.onerror = ()=>{
+    if(seq!==photoSeq) return;
+    if(list.length > 1){ showPhoto(p, 1); }
+    else box.innerHTML = '<div class="ph">Image indisponible.<br><button class="smallbtn retry" onclick="retryPhoto()">Réessayer</button></div>';
+  };
+  img.onload = ()=>{
+    if(seq!==photoSeq) return;
+    box.innerHTML = '';
+    box.appendChild(img);
+  };
+  img.src = ph.u;
+  if(cr){
+    cr.innerHTML = '📷 <a href="' + esc(ph.d) + '" target="_blank" rel="noopener">' + esc(ph.t) + '</a>'
+      + (ph.a? ' — ' + esc(ph.a) : '') + (ph.l? ' — ' + esc(ph.l) : '')
+      + ' · Wikimedia Commons · ' + (st.i+1) + '/' + list.length;
+  }
+}
+function retryPhoto(){
+  const p = currentCard();
+  if(!p) return;
+  delete photoMem[p.n];
+  store.del(pkey(p.n));
+  showPhoto(p, 0);
+}
+function otherPhoto(){
+  const p = currentCard();
+  if(p) showPhoto(p, 1);
+}
+function currentCard(){
+  if($('quiz').classList.contains('active')) return qcur? qcur.p : null;
+  if(document.body.classList.contains('playing')) return list[idx];
+  if(exCur) return DATA.find(x=>x.n===exCur) || null;
+  return null;
+}
+/* Préchargement discret de la fiche suivante. */
+function prefetchNext(){
+  if(!list.length) return;
+  const p = list[(idx+1) % list.length];
+  if(!p || photoMem[p.n]) return;
+  getPhotos(p).catch(()=>{});
+}
+
+/* ---------- diagnostic : passe les 71 fiches au résolveur ----------
+   Je ne peux pas interroger Commons depuis l'atelier où cette application a
+   été écrite ; ce test le fait depuis votre navigateur et produit un rapport
+   copiable, fiche par fiche. */
+let diagRunning = false, diagAbort = false, diagReport = '';
+
+function openDiag(){ $('syncsetup').style.display = 'none'; $('diag').style.display = 'flex'; }
+function closeDiag(){ diagAbort = true; $('diag').style.display = 'none'; }
+function stopDiag(){ diagAbort = true; $('diagStatus').textContent = 'Arrêt demandé…'; }
+function copyDiag(){
+  const t = diagReport || $('diagOut').textContent;
+  if(!t){ alert('Lancez d’abord le test.'); return; }
+  navigator.clipboard.writeText(t).then(
+    ()=>alert('Rapport copié.'),
+    ()=>alert('Copie refusée par le navigateur : sélectionnez le texte à la main.')
+  );
+}
+const sleep = ms => new Promise(r=>setTimeout(r, ms));
+
+async function runDiag(){
+  if(diagRunning) return;
+  diagRunning = true; diagAbort = false;
+  $('diagRun').style.display = 'none';
+  $('diagStop').style.display = 'inline-block';
+  const out = $('diagOut');
+  out.innerHTML = '';
+  const lines = [], ko = [];
+  let done = 0, found = 0;
+  for(const p of DATA){
+    if(diagAbort) break;
+    let n = 0, first = '', err = '';
+    try{
+      const l = await getPhotos(p);
+      n = l.length; first = n? l[0].t : '';
+    }catch(e){ err = e.message || 'erreur réseau'; }
+    done++;
+    if(n) found++; else ko.push(p.n + (err? ' — ' + err : ''));
+    const cls = n? 'ok' : 'ko';
+    const line = (n? String(n).padStart(2,' ') : ' 0') + '  ' + p.n + (first? '  ← ' + first : (err? '  ← ' + err : ''));
+    lines.push(line);
+    const div = document.createElement('div');
+    div.className = cls;
+    div.textContent = line;
+    out.appendChild(div);
+    out.scrollTop = out.scrollHeight;
+    $('diagStatus').textContent = done + ' / ' + DATA.length + ' — ' + found + ' avec photo, ' + (done-found) + ' sans';
+    await sleep(120);
+  }
+  diagReport = 'Boîte à avions — test des photos\n'
+    + done + ' fiches testées, ' + found + ' avec photo, ' + (done-found) + ' sans.\n\n'
+    + (ko.length? 'SANS PHOTO :\n' + ko.map(x=>'  - '+x).join('\n') + '\n\n' : '')
+    + 'DÉTAIL :\n' + lines.join('\n');
+  $('diagStatus').textContent = (diagAbort? 'Interrompu — ' : 'Terminé — ')
+    + done + ' / ' + DATA.length + ' · ' + found + ' avec photo, ' + (done-found) + ' sans';
+  $('diagRun').style.display = 'inline-block';
+  $('diagStop').style.display = 'none';
+  diagRunning = false;
+}
+
+/* ---------- synchronisation GitHub ---------- */
+const GH_FILE = 'avions-marques.json';
+const DEFAULT_REPO = 'victortisme/Boite-a-avions';
+let ghRepo = store.get('bav_gh_repo') || DEFAULT_REPO;
+let ghToken = store.get('bav_gh_token') || '';
+let ghSha = null, syncTimer = null, ghSaving = false;
+let markRev = 0;
+
+const ghApi = () => 'https://api.github.com/repos/' + ghRepo + '/contents/' + GH_FILE;
+let lastErr = '';
+function httpReason(code){
+  if(code === 401) return 'HTTP 401 — jeton invalide, expiré ou révoqué';
+  if(code === 403) return 'HTTP 403 — permission « Contents : Read and write » manquante';
+  if(code === 404) return 'HTTP 404 — dépôt introuvable, ou jeton non autorisé sur ' + ghRepo;
+  if(code === 409 || code === 422) return 'HTTP ' + code + ' — conflit de version';
+  return 'HTTP ' + code;
+}
+function b64enc(s){ return btoa(unescape(encodeURIComponent(s))); }
+function b64dec(s){ return decodeURIComponent(escape(atob(s.replace(/\s/g,'')))); }
+function setSyncStatus(t){ const el = $('syncstatus'); if(el) el.textContent = t; }
+function syncedMsg(){ return '☁️ Synchronisé (' + nbAcquis() + ' acquis · ' + nbRevoir() + ' à revoir)'; }
+
+function toggleSyncSetup(){
+  const p = $('syncsetup');
+  const open = p.style.display === 'none';
+  p.style.display = open ? 'flex' : 'none';
+  if(open){
+    $('ghtoken').value = ghToken;
+    $('ghrepo').value = ghRepo;
+    setTimeout(()=>$('ghtoken').focus(), 50);
+  }
+}
+async function pasteToken(){
+  try{
+    const t = await navigator.clipboard.readText();
+    if(t) $('ghtoken').value = t.trim();
+    else alert('Presse-papiers vide.');
+  }catch(e){
+    alert('Collage automatique refusé par le navigateur : appuyez longuement dans le champ puis choisissez « Coller ».');
+    $('ghtoken').focus();
+  }
+}
+function saveGhToken(){
+  const repo = $('ghrepo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/^\/|\/$/g,'');
+  if(repo && !/^[\w.-]+\/[\w.-]+$/.test(repo)){
+    alert('Le dépôt doit s’écrire « propriétaire/nom », par exemple ' + DEFAULT_REPO + '.');
+    return;
+  }
+  ghRepo = repo || DEFAULT_REPO;
+  ghToken = $('ghtoken').value.replace(/\s+/g,'').trim();
+  if(ghToken && !/^gh[pousr]_|^github_pat_/.test(ghToken)){
+    if(!confirm('Ce texte ne ressemble pas à un jeton GitHub. L’enregistrer quand même ?')) return;
+  }
+  store.set('bav_gh_repo', ghRepo);
+  store.set('bav_gh_token', ghToken);
+  ghSha = null;
+  $('syncsetup').style.display = 'none';
+  if(ghToken){ setSyncStatus('☁️ Jeton enregistré — connexion…'); ghLoad(); }
+  else setSyncStatus('☁️ Jeton effacé — marquages locaux uniquement');
+}
+
+function readBase(){ try{ return JSON.parse(store.get('bav_base')||'{}') || {}; }catch(e){ return {}; } }
+function writeBase(m){ store.set('bav_base', JSON.stringify(m)); }
+function parseMarks(raw){
+  const out = {};
+  if(raw && typeof raw === 'object' && !Array.isArray(raw)){
+    for(const k in raw){ const v = String(raw[k]); if(v==='acquis'||v==='revoir') out[k] = v; }
+  }
+  return out;
+}
+const MAX_SUPPR = 5;
+function countSuppr(edits){ let n = 0; for(const k in edits){ if(edits[k] === 'ND') n++; } return n; }
+function localEdits(){
+  const base = readBase(), edits = {};
+  if(!Object.keys(marks).length && Object.keys(base).length) return null;
+  new Set([...Object.keys(marks), ...Object.keys(base)]).forEach(k=>{
+    const now = marks[k] || 'ND', before = base[k] || 'ND';
+    if(now !== before) edits[k] = now;
+  });
+  if(countSuppr(edits) > MAX_SUPPR) return null;
+  return edits;
+}
+function applyEdits(remote, edits){
+  const merged = Object.assign({}, remote);
+  for(const k in edits){ if(edits[k]==='ND') delete merged[k]; else merged[k] = edits[k]; }
+  return merged;
+}
+function resetFromRemote(remote, msg){
+  marks = remote;
+  saveMarks(); writeBase(remote); refreshMarkUI();
+  setSyncStatus(msg);
+}
+async function ghRead(){
+  const headers = ghToken ? {Authorization:'Bearer '+ghToken} : {};
+  const r = await fetch(ghApi() + '?ref=main&t=' + Date.now(), {cache:'no-store', headers});
+  if(r.status === 404) return {marks:{}, sha:null, missing:true};
+  if(!r.ok){ lastErr = httpReason(r.status); return null; }
+  const j = await r.json();
+  return {marks: parseMarks(JSON.parse(b64dec(j.content))), sha: j.sha, missing:false};
+}
+async function ghLoad(){
+  const rev0 = markRev;
+  let res;
+  try{ res = await ghRead(); }catch(e){ res = null; }
+  if(res === null){
+    setSyncStatus(ghToken ? '☁️ Lecture impossible — ' + (lastErr || 'erreur réseau ou CORS')
+                          : '☁️ Marquages locaux — configurez le jeton pour synchroniser');
+    lastErr = '';
+    return;
+  }
+  ghSha = res.sha;
+  const remote = res.marks;
+  if(markRev !== rev0){
+    const e0 = localEdits();
+    if(e0){ marks = applyEdits(remote, e0); saveMarks(); refreshMarkUI(); }
+    if(ghToken) scheduleGhSave();
+    return;
+  }
+  const edits = localEdits();
+  if(edits === null){
+    resetFromRemote(remote, '☁️ Liste locale incohérente — rechargée depuis GitHub (aucune suppression envoyée)');
+  } else if(Object.keys(edits).length){
+    marks = applyEdits(remote, edits);
+    saveMarks(); refreshMarkUI();
+    if(ghToken) scheduleGhSave();
+    else setSyncStatus('☁️ Modifications locales non envoyées — jeton requis');
+  } else {
+    marks = remote;
+    saveMarks(); writeBase(remote); refreshMarkUI();
+    if(res.missing) setSyncStatus(ghToken ? '☁️ Prêt — ' + GH_FILE + ' sera créé au premier marquage'
+                                          : '☁️ Aucun fichier distant — configurez le jeton');
+    else setSyncStatus(ghToken ? syncedMsg() : '☁️ Liste partagée chargée — lecture seule sans jeton');
+  }
+}
+function scheduleGhSave(){
+  if(!ghToken){ setSyncStatus('☁️ Modifié localement — jeton requis pour synchroniser'); return; }
+  setSyncStatus('☁️ Enregistrement…');
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(()=>ghSave(false), 1500);
+}
+async function ghSave(isRetry){
+  if(ghSaving){ clearTimeout(syncTimer); syncTimer = setTimeout(()=>ghSave(false), 700); return; }
+  ghSaving = true;
+  try{
+    let res = null;
+    try{ res = await ghRead(); }catch(e){ res = null; }
+    if(res === null){
+      setSyncStatus('☁️ Lecture GitHub impossible — enregistrement reporté');
+      clearTimeout(syncTimer); syncTimer = setTimeout(()=>ghSave(false), 6000);
+      return;
+    }
+    ghSha = res.sha;
+    const remote = res.marks;
+    const rev = markRev;
+    const edits = localEdits();
+    if(edits === null){
+      resetFromRemote(remote, '⚠️ Suppression massive bloquée — liste rechargée depuis GitHub');
+      return;
+    }
+    const merged = applyEdits(remote, edits);
+    const nRemote = Object.keys(remote).length, nMerged = Object.keys(merged).length;
+    if(nRemote && (!nMerged || nMerged < nRemote - MAX_SUPPR)){
+      resetFromRemote(remote, '⚠️ Enregistrement annulé : perte anormale de marquages — liste rechargée');
+      return;
+    }
+    const sorted = {};
+    Object.keys(merged).sort((a,b)=>a.localeCompare(b,'fr')).forEach(k=>{ sorted[k] = merged[k]; });
+    const body = {
+      message: 'Mise à jour des marquages',
+      content: b64enc(JSON.stringify(sorted, null, 1)),
+      branch: 'main'
+    };
+    if(ghSha) body.sha = ghSha;
+    const r = await fetch(ghApi(), {
+      method:'PUT',
+      headers:{Authorization:'Bearer '+ghToken, 'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if((r.status === 409 || r.status === 422) && !isRetry){
+      clearTimeout(syncTimer); syncTimer = setTimeout(()=>ghSave(true), 400);
+      return;
+    }
+    if(!r.ok){ lastErr = httpReason(r.status); throw 0; }
+    const j = await r.json();
+    ghSha = j.content.sha;
+    if(markRev === rev){
+      marks = merged;
+      saveMarks(); writeBase(merged); refreshMarkUI();
+      setSyncStatus(syncedMsg());
+    }else{
+      setSyncStatus('☁️ Enregistrement…');
+      clearTimeout(syncTimer); syncTimer = setTimeout(()=>ghSave(false), 900);
+    }
+  }catch(e){
+    setSyncStatus('☁️ Échec de l’enregistrement — ' + (lastErr || 'erreur réseau ou CORS'));
+    lastErr = '';
+  }finally{
+    ghSaving = false;
+  }
+}
+
+/* ---------- état ---------- */
+let mode = 1;
+let pool = 'tous';
+let sel = new Set(ERAS);
+let fields = new Set(['mk','mo','en','co']);
+let randLimit = 0;
+let list = [], idx = 0, shown = 0;
+let quizList = [], qi = 0, qgood = 0, qdone = 0, qcur = null;
+let exCur = null;
+
+/* ---------- accueil ---------- */
+function buildCats(){
+  const g = $('catgrid');
+  g.innerHTML = ERAS.map(c=>{
+    const n = DATA.filter(p=>p.c===c).length;
+    return `<label class="catitem"><input type="checkbox" ${sel.has(c)?'checked':''} onchange="toggleCat('${jsq(c)}',this.checked)"><span>${esc(c)}</span><span class="cnt">${n}</span></label>`;
+  }).join('');
+  updCount();
+}
+function toggleCat(c,on){ on? sel.add(c) : sel.delete(c); randLimit = 0; updCount(); }
+function allCats(on){ sel = on? new Set(ERAS) : new Set(); randLimit = 0; buildCats(); }
+function randomPick(){
+  const n = Math.max(1, Math.min(NB, parseInt($('nbRand').value||'20',10)));
+  randLimit = n; updCount();
+}
+function base(){
+  let l = DATA.filter(p=>sel.has(p.c));
+  if(pool!=='tous') l = l.filter(p=>markOf(p.n)===pool);
+  return l;
+}
+function updCount(){
+  const n = base().length;
+  const r = randLimit? ` — tirage de ${Math.min(randLimit,n)} au hasard` : '';
+  $('selcount').textContent = `${n} appareil${n>1?'s':''} sélectionné${n>1?'s':''}${r}`;
+  $('startBtn').disabled = n===0;
+  $('startBtn').style.opacity = n===0? .4 : 1;
+}
+function setPool(p){
+  pool = p;
+  document.querySelectorAll('#poolpanel .chip').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+  updCount();
+}
+function toggleField(f){
+  if(fields.has(f)){ if(fields.size===1) return; fields.delete(f); } else fields.add(f);
+  document.querySelectorAll('#quizpanel .chip').forEach(b=>b.classList.toggle('on', fields.has(b.dataset.q)));
+}
+function setMode(m){
+  mode = m;
+  [1,2,3,4].forEach(i=>$('mode'+i+'btn').classList.toggle('selected', i===m));
+  const explore = m===4;
+  $('catpanel').style.display = explore? 'none':'flex';
+  $('poolpanel').style.display = explore? 'none':'block';
+  $('quizpanel').style.display = m===3? 'block':'none';
+  $('expanel').style.display = explore? 'block':'none';
+  $('startBtn').style.display = explore? 'none':'inline-block';
+  $('homefoot').textContent = explore? 'Recherche par compagnie, constructeur, modèle ou moteur' : FOOT;
+  if(explore){ $('exInput').focus(); }
+}
+
+/* ---------- session fiches ---------- */
+function startSession(){
+  let l = shuffle(base().slice());
+  if(randLimit) l = l.slice(0, randLimit);
+  if(!l.length) return;
+  if(mode===3){ quizList = l; qi = 0; qgood = 0; qdone = 0; show('quiz'); quizAsk(); return; }
+  list = l; idx = 0; show('play'); render();
+}
+/* Les trois écrans coexistent dans le DOM : on vide les fiches inactives,
+   sinon deux éléments porteraient l'id « photo » et getElementById
+   renverrait celui du mauvais écran. */
+function show(id){
+  photoSeq++;
+  if(id!=='home'){ $('exCard').innerHTML = ''; $('exCard').style.display = 'none'; }
+  if(id!=='play') $('playcard').innerHTML = '';
+  if(id!=='quiz') $('quizcard').innerHTML = '';
+  ['home','play','quiz'].forEach(s=>$(s).classList.toggle('active', s===id));
+  document.body.classList.toggle('playing', id==='play');
+  window.scrollTo(0,0);
+}
+function goHome(){ show('home'); buildCats(); updCount(); }
+function shuffleNow(){ shuffle(list); idx = 0; render(); }
+
+function valHTML(p,f){
+  const flag = (f==='en' && p.et)
+    ? '<span class="flagtype" title="Motorisation donnée au niveau du type : l’appareil photographié peut différer">TYPE</span>' : '';
+  return esc(p[f]) + flag;
+}
+function factHTML(p,f,hidden){
+  return `<div class="fact ${hidden?'hidden':''}" data-f="${f}" onclick="revealOne('${f}',event)">
+            <span class="lab">${LAB[f]}</span>
+            <span class="val">${hidden? '• • •' : valHTML(p,f)}</span>
+          </div>`;
+}
+function cardBody(p, hideFrom){
+  const sub = p.et? '<p class="subline">TYPE : motorisation donnée au niveau du type, l’appareil photographié pouvant en différer.</p>' : '';
+  return `<div class="photowrap" id="photo"></div>
+     <div class="credit${hideFrom<ORDER.length?' masked':''}" id="credit"></div>
+     <div class="diffrow">${segHTML(p.n)}</div>
+     <div class="meanings">${ORDER.map((f,i)=>factHTML(p,f, i>=hideFrom)).join('')}</div>
+     <div id="tail" style="display:${hideFrom<ORDER.length?'none':'block'}">${sub}${p.note? `<div class="note">${esc(p.note)}</div>`:''}</div>`;
+}
+function render(){
+  const p = list[idx];
+  shown = mode===2? 0 : ORDER.length;
+  $('counter').textContent = `${idx+1} / ${list.length}`;
+  $('playcard').innerHTML = cardBody(p, shown);
+  const b = $('revealBtn');
+  b.style.display = mode===2? 'block':'none';
+  b.disabled = false;
+  b.textContent = '👁 Révéler';
+  paintSideBtns();
+  showPhoto(p, 0);
+  setTimeout(prefetchNext, 900);
+}
+function unmaskTail(){
+  const cr = $('credit'); if(cr) cr.classList.remove('masked');
+  const t = $('tail'); if(t) t.style.display = 'block';
+}
+function revealOne(f, ev){
+  if(mode!==2 || !document.body.classList.contains('playing')) return;
+  const el = document.querySelector(`#playcard .fact[data-f="${f}"]`);
+  if(!el || !el.classList.contains('hidden')) return;
+  if(ev) ev.stopPropagation();
+  el.classList.remove('hidden');
+  el.querySelector('.val').innerHTML = valHTML(list[idx], f);
+  shown++;
+  if(shown>=ORDER.length){ unmaskTail(); $('revealBtn').textContent = 'Suivant ▶'; }
+}
+function revealOrNext(){
+  if(mode!==2){ nav(1); return; }
+  const next = document.querySelector('#playcard .fact.hidden');
+  if(next){ revealOne(next.dataset.f); return; }
+  nav(1);
+}
+function nav(d){
+  idx = (idx + d + list.length) % list.length;
+  render();
+}
+function segHTML(n){
+  const s = markOf(n);
+  const b = (v,t)=>`<button data-s="${v}" class="${s===v?'on':''}" onclick="mark('${jsq(n)}','${v}')">${t}</button>`;
+  return `<span class="diffseg">${b('ND','ND')}${b('acquis','✅ acquis')}${b('revoir','🔥 à revoir')}</span>`;
+}
+function mark(n,s){
+  setMark(n, markOf(n)===s? 'ND' : s);
+  refreshMarkUI();
+}
+function markCurrent(s){
+  if(!document.body.classList.contains('playing')) return;
+  const p = list[idx];
+  if(p) mark(p.n, s);
+}
+function paintSideBtns(){
+  const p = document.body.classList.contains('playing') ? list[idx] : null;
+  const s = p ? markOf(p.n) : 'ND';
+  const l = $('sideRevoir'), r = $('sideAcquis');
+  if(l) l.classList.toggle('on', s==='revoir');
+  if(r) r.classList.toggle('on', s==='acquis');
+}
+function refreshMarkUI(){
+  const pRow = document.querySelector('#playcard .diffrow');
+  if(pRow && list[idx]) pRow.innerHTML = segHTML(list[idx].n);
+  const eRow = document.querySelector('#exCard .diffrow');
+  if(eRow && exCur) eRow.innerHTML = segHTML(exCur);
+  paintSideBtns();
+  if($('home').classList.contains('active')) updCount();
+}
+
+/* ---------- quiz ---------- */
+const QUESTION = {mk:'Qui a construit cet appareil ?', mo:'Quel est ce modèle ?',
+                  en:'Quelle est sa motorisation ?', co:'Quelle compagnie porte cette livrée ?'};
+function quizAsk(){
+  if(qi >= quizList.length) qi = 0;
+  const p = quizList[qi];
+  const fs = [...fields];
+  const f = fs[Math.floor(Math.random()*fs.length)];
+  const pooled = DATA.filter(x => x[f] !== p[f]);
+  const opts = shuffle(pooled.slice()).filter((x,i,a)=>a.findIndex(y=>y[f]===x[f])===i).slice(0,3).map(x=>x[f]);
+  qcur = {p, f, answer: p[f], options: shuffle(opts.concat([p[f]]))};
+  $('qcounter').textContent = `${qi+1} / ${quizList.length}`;
+  $('qscore').textContent = qdone? `${qgood} / ${qdone}` : '';
+  $('quizcard').innerHTML =
+    `<p class="qask">${QUESTION[f]}</p>
+     <div class="photowrap" id="photo"></div>
+     <div class="credit masked" id="credit"></div>
+     <div class="qopts">${qcur.options.map(o=>`<button class="qopt" onclick="answer(this)">${esc(o)}</button>`).join('')}</div>
+     <div class="note" id="qnote" style="display:none"></div>`;
+  showPhoto(p, 0);
+}
+function answer(btn){
+  const good = btn.textContent === qcur.answer;
+  document.querySelectorAll('#quizcard .qopt').forEach(b=>{
+    b.disabled = true;
+    if(b.textContent === qcur.answer) b.classList.add('good');
+    else if(b === btn) b.classList.add('bad');
+  });
+  qdone++; if(good) qgood++;
+  setMark(qcur.p.n, good? 'acquis':'revoir');
+  $('qscore').textContent = `${qgood} / ${qdone}`;
+  const p = qcur.p;
+  const rest = ORDER.filter(f=>f!==qcur.f).map(f=>`${LAB[f]} : ${esc(p[f])}`).join(' · ');
+  const n = $('qnote');
+  n.style.display = 'block';
+  n.innerHTML = `${rest}${p.note? '<br>'+esc(p.note) : ''}`;
+  unmaskTail();
+}
+function quizNext(){ qi++; if(qi>=quizList.length){ qi = 0; shuffle(quizList); } quizAsk(); }
+
+/* ---------- explorer ---------- */
+function exSearch(){
+  const q = norm($('exInput').value.trim());
+  const sug = $('exSug'), card = $('exCard');
+  if(q.length < 2){ sug.innerHTML = ''; card.style.display='none'; exCur = null; return; }
+  const hits = DATA.filter(p => norm(p.n).includes(q) || norm(p.mo).includes(q) || norm(p.en).includes(q)
+                             || norm(p.co).includes(q) || norm(p.mk).includes(q)).slice(0,12);
+  if(!hits.length){ sug.innerHTML = '<span class="exnone">Aucun résultat</span>'; card.style.display='none'; return; }
+  sug.innerHTML = hits.map(p=>`<button onclick="exShow('${jsq(p.n)}')">${esc(p.mk)} ${esc(p.mo)} · ${esc(p.co)}</button>`).join('');
+  if(hits.length===1) exShow(hits[0].n);
+}
+function exShow(n){
+  const p = DATA.find(x=>x.n===n);
+  if(!p) return;
+  exCur = p.n;
+  const card = $('exCard');
+  card.style.display = 'flex';
+  card.innerHTML = cardBody(p, ORDER.length);
+  showPhoto(p, 0);
+}
+
+/* ---------- révélation au clic sur l'écran ---------- */
+document.addEventListener('click', e=>{
+  if(!document.body.classList.contains('playing')) return;
+  if(e.target.closest('button, input, a, select, textarea, .diffseg, .topbar, .controls, .sidebtn')) return;
+  if(e.target.closest('.fact.hidden')) return;
+  revealOrNext();
+});
+
+/* ---------- clavier ---------- */
+document.addEventListener('keydown', e=>{
+  const t = e.target;
+  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+  if($('diag').style.display !== 'none'){ if(e.key === 'Escape') closeDiag(); return; }
+  if($('syncsetup').style.display !== 'none'){ if(e.key === 'Escape') toggleSyncSetup(); return; }
+  const k = e.key;
+  if((k === 'p' || k === 'P') && currentCard()){ e.preventDefault(); otherPhoto(); return; }
+  if(!document.body.classList.contains('playing')) return;
+  if(k === 'ArrowRight' || k === 'ArrowDown'){ e.preventDefault(); revealOrNext(); }
+  else if(k === 'ArrowLeft' || k === 'ArrowUp'){ e.preventDefault(); nav(-1); }
+  else if(k === ' ' || k === 'Enter'){ e.preventDefault(); revealOrNext(); }
+  else if(k === 'q' || k === 'Q'){ e.preventDefault(); markCurrent('revoir'); }
+  else if(k === 'd' || k === 'D'){ e.preventDefault(); markCurrent('acquis'); }
+  else if(k === 'n' || k === 'N'){
+    e.preventDefault();
+    const p = list[idx];
+    if(p){ setMark(p.n, 'ND'); refreshMarkUI(); }
+  }
+  else if(k === 'Escape'){ goHome(); }
+});
+
+/* ---------- balayage tactile ---------- */
+(function(){
+  let x0 = null, y0 = null;
+  document.addEventListener('touchstart', e=>{
+    if(document.body.classList.contains('playing')){ x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }
+  }, {passive:true});
+  document.addEventListener('touchend', e=>{
+    if(x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if(Math.abs(dx) > 70 && Math.abs(dx) > 2*Math.abs(dy)){
+      if(dx < 0) revealOrNext(); else nav(-1);
+    }
+  }, {passive:true});
+})();
+
+$('homefoot').textContent = FOOT;
+buildCats();
+ghLoad();
+</script>
+</body>
+</html>
