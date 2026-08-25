@@ -405,7 +405,19 @@ const PHOTO_MAX = 12;
 const photoMem = {};          // n -> {list:[...], i:0}
 let photoSeq = 0;             // annule l'affichage d'une photo devenue obsolète
 
-const pkey = n => 'bav_ph_' + n;
+const CACHE_VER = 2;
+const PKEY_PREFIX = 'bav_ph' + CACHE_VER + '_';
+const pkey = n => PKEY_PREFIX + n;
+(function purgeVieuxCache(){
+  try{
+    const morts = [];
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && /^bav_ph[0-9]*_/.test(k) && k.indexOf(PKEY_PREFIX) !== 0) morts.push(k);
+    }
+    morts.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  }catch(e){}
+})();
 
 function stripTags(h){
   const d = document.createElement('div');
@@ -622,7 +634,8 @@ async function getPhotos(p){
   if(photoMem[p.n]) return photoMem[p.n].list;
   try{
     const c = JSON.parse(store.get(pkey(p.n)) || 'null');
-    if(c && c.t && (Date.now() - c.t) < PHOTO_TTL && Array.isArray(c.v) && c.v.length){
+    const pinOk = !p.pin || (c && Array.isArray(c.v) && c.v[0] && c.v[0].t === p.pin);
+    if(pinOk && c && c.t && (Date.now() - c.t) < PHOTO_TTL && Array.isArray(c.v) && c.v.length){
       photoMem[p.n] = {list:c.v, i:0};
       return c.v;
     }
@@ -637,7 +650,7 @@ function clearPhotoCache(){
   let n = 0;
   try{
     const keys = [];
-    for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.indexOf('bav_ph_')===0) keys.push(k); }
+    for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && /^bav_ph[0-9]*_/.test(k)) keys.push(k); }
     keys.forEach(k=>{ store.del(k); n++; });
   }catch(e){}
   Object.keys(photoMem).forEach(k=>delete photoMem[k]);
