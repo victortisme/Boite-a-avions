@@ -199,11 +199,11 @@ body.playing .sidebtn{display:flex;}
   </div>
 
   <div class="modes">
-    <button class="mode-btn selected" id="mode1btn" onclick="setMode(1)">
-      <span class="ico">🗂️</span><b>Présentation</b>
-    </button>
-    <button class="mode-btn" id="mode2btn" onclick="setMode(2)">
+    <button class="mode-btn selected" id="mode2btn" onclick="setMode(2)">
       <span class="ico">🙈</span><b>Révélation</b>
+    </button>
+    <button class="mode-btn" id="mode1btn" onclick="setMode(1)">
+      <span class="ico">🗂️</span><b>Présentation</b>
     </button>
     <button class="mode-btn" id="mode3btn" onclick="setMode(3)">
       <span class="ico">🎯</span><b>Quiz</b>
@@ -997,7 +997,7 @@ async function ghSave(isRetry){
 }
 
 /* ---------- état ---------- */
-let mode = 1;
+let mode = 2;                 // Révélation par défaut
 let pool = 'tous';
 let sel = new Set(ERAS);
 let fields = new Set(['mk','mo','en','co']);
